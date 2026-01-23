@@ -9,3 +9,8 @@
 #### donaldsonmid@spu.edu
 #### 425-408-3283
 #### DamienDonaldson-Midkiff
+
+## Yohanna Tewolde
+#### tewoldey1@spu.edu
+#### 206-483-6611
+#### Github: yohannat
