@@ -1,9 +1,9 @@
 # SPU_CSC3220_W26_Team_Azur
 
 ## Sangam Prajapati
-#### prajapatis1@spu.edu
-#### 2063215539
-#### sangampraz
+#### Email: prajapatis1@spu.edu
+#### Phone: 2063215539
+#### GitHub: sangampraz
 
 ## Damien Midkiff
 #### donaldsonmid@spu.edu
