@@ -1,4 +1,4 @@
-// DDL
+
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE Customer (
@@ -13,7 +13,7 @@ CREATE TABLE Customer (
 CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
-    LastName            Text NOT NULL,
+    Name            Text NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
@@ -29,6 +29,7 @@ CONSTRAINTS FK_Product_Supplier
     ON UPDATE CASCADE
     ON DELETE SET NULL
 );
+
 CREATE TABLE Sale (
   SaleID INTEGER PRIMARY KEY,
   CustomerID INTEGER NOT NULL,
