@@ -49,12 +49,9 @@ WHERE ProductID IN (
 Insert INTO Inventory_Adjustment (ProductID, ChangeQty, Reason, Notes)
 SELECT ProductID, Quantity, 'Sale Reversal', 'Voided SaleID = 1'
 FROM Sale_Item WHERE SaleID = 1;
+
 DELETE FROM Sale WHERE SaleID = 1;
 
-DELETE FROM Sale_Item
-WHERE SaleID = 1;
-DELETE FROM Sale
-WHERE SaleID = 1;
 COMMIT;
 
 BEGIN TRANSACTION;
