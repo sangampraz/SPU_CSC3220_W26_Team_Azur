@@ -34,13 +34,28 @@ VALUES
 COMMIT;
     
 BEGIN TRANSACTION;
+
 DELETE FROM Sale_Item
 WHERE SaleID = 1;
 DELETE FROM Sale
 WHERE SaleID = 1;
 COMMIT;
 
+BEGIN TRANSACTION;
+
+UPDATE Product
+SET StockQty = StockQty - 2,
+    IsActive = 1
+WHERE ProductID = 1;
+
 UPDATE Product
 SET StockQty = StockQty - 1,
     IsActive = 1
-WHERE ProductID = 1;
+WHERE ProductID = 2;
+
+INSERT INTO Inventory_Adjustment (ProductID, AdjustmentDateTime, ChangeQty, Reason, Notes)
+VALUES
+    (1, datetime('now'), -2, 'Sale', 'Decrease after sale'),
+    (2, datetime('now'), -1, 'Sale', 'Decrease after sale');
+
+COMMIT;
