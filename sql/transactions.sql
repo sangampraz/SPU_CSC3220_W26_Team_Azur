@@ -35,6 +35,22 @@ COMMIT;
     
 BEGIN TRANSACTION;
 
+UPDATE Product
+Set StockQty = StockQty + (
+    SELECT Quanttity
+    FROM Sale_Item
+    WHERE SaleId = 1 AND ProductID = Product.ProductID)
+
+WHERE ProductID IN (
+    SELECT ProductID
+    FROM Sale_Item
+    WHERE SaleID = 1
+);
+Insert INTO Inventory_Adjustment (ProductID, ChangeQty, Reason, Notes)
+SELECT ProductID, Quantity, 'Sale Reversal', 'Voided SaleID = 1'
+FROM Sale_Item WHERE SaleID = 1;
+DELETE FROM Sale WHERE SaleID = 1;
+
 DELETE FROM Sale_Item
 WHERE SaleID = 1;
 DELETE FROM Sale
