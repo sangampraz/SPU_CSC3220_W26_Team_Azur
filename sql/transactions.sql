@@ -5,11 +5,11 @@ VALUES (1, 'Test', 'Customer');
 INSERT INTO Supplier (SupplierName)
 VALUES ('Test Supplier');
 
-INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
-VALUES (1, 1, 'Item A', 6.99, 50, 10, 1);
+INSERT INTO Product (ProductID, SupplierID, Name, LastName, UnitPrice, StockQty, LowStockThreshold, IsActive)
+VALUES (1, 1, 'Item A', 'CategoryB', 6.99, 50, 10, 1);
 
-INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
-VALUES (2, 1, 'Item B', 4.99, 50, 10, 1);
+INSERT INTO Product (ProductID, SupplierID, Name, LastName, UnitPrice, StockQty, LowStockThreshold, IsActive)
+VALUES (2, 1, 'Item B', 'CategoryB', 4.99, 50, 10, 1);
 
 
 -- INSERT transaction
