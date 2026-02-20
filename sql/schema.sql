@@ -1,6 +1,7 @@
-// DDL
+
 PRAGMA foreign_keys = ON;
 
+-- Customer
 CREATE TABLE Customer (
     CustomerID  INTEGER PRIMARY KEY,
     FirstName   TEXT NOT NULL,
@@ -10,9 +11,21 @@ CREATE TABLE Customer (
     Notes       TEXT 
 );
 
+-- Supplier
+CREATE TABLE Supplier (
+    SupplierID      INTEGER PRIMARY KEY AUTOINCREMENT,
+    SupplierName    TEXT NOT NULL,
+    Phone           TEXT,
+    Email           TEXT,
+    Address         TEXT,
+    Note            Text
+);
+
+-- Product
 CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
+    Name                TEXT NOT NULL,
     Name            Text NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
@@ -29,7 +42,14 @@ CONSTRAINT FK_Product_Supplier
     ON UPDATE CASCADE
     ON DELETE SET NULL
 );
+
+-- Sale
 CREATE TABLE Sale (
+  SaleID            INTEGER PRIMARY KEY,
+  CustomerID        INTEGER NOT NULL,
+  SaleDateTime      TEXT NOT NULL,
+  TotalAmount       REAL NOT NULL, 
+  FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
   SaleID INTEGER PRIMARY KEY,
   CustomerID INTEGER NOT NULL,
   SaleDateTime TEXT NOT NULL,
@@ -37,6 +57,18 @@ CREATE TABLE Sale (
 FOREIGN KEY, (CustomerID) REFRENCES Customer(CustomerID)
   );
 
+-- Sale_Item
+CREATE TABLE Sale_Item (
+    SaleItemID          INTEGER PRIMARY KEY AUTOINCREMENT,
+    SaleID              INTEGER NOT NULL,
+    ProductID           INTEGER NOT NULL,
+    Quantity            INTEGER NOT NULL (Quantity > 0),
+    UnitPriceAtSale     REAL NOT NULL (UnitPriceAtSale >= 0),
+    FOREIGN KEY (SaleID) REFERENCES Sale(SaleID) ON DELETE CASCADE,
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+
+-- Inventory_Adjustment
 CREATE TABLE Inventory_Adjustment (
   AdjustmentID INTEGER PRIMARY KEY,
   ProductID INTEGER NOT NULL,
@@ -47,24 +79,7 @@ CREATE TABLE Inventory_Adjustment (
   FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
   );
 
-CREATE TABLE Supplier (
-    SupplierID INTEGER PRIMARY KEY AUTOINCREMENT,
-    SupplierName TEXT NOT NULL,
-    Phone TEXT,
-    Email TEXT,
-    Address TEXT,
-    Note Text
-);
 
-CREATE TABLE Sale_Item (
-    SaleItemID INTEGER PRIMARY KEY AUTOINCREMENT,
-    SaleID INTEGER NOT NULL,
-    ProductID INTEGER NOT NULL,
-    Quantity INTEGER NOT NULL,
-    UnitPriceAtSale Real NOT NULL,
-    FOREIGN KEY (SaleID) REFERENCES Sale(SaleID) ON DELETE CASCADE,
-    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
-);
 
 
 
