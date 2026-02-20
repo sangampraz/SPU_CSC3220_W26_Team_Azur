@@ -13,18 +13,18 @@ CREATE TABLE Customer (
 CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
-    LastName            Text NOT NULL,
+    Name            Text NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
-    CostPrice           REAL CHECK (CostPrice IS NULL OR CostPRice >= 0),
+    CostPrice           REAL CHECK (CostPrice IS NULL OR CostPrice >= 0),
     StockQty            INTEGER NOT NULL CHECK (StockQty >= 0),
     LowStockThreshold   INTEGER NOT NULL CHECK (LowStockThreshold >= 9),
     ReorderQty          INTEGER CHECK (ReorderQty IS NULL OR ReorderQty >= 0),
     IsActive            INTEGER NOT NULL DEFAULT 1 CHECK (IsActive IN (0,1)),
 
-CONSTRAINTS UQ_Product_SKU UNIQUE (SKU),
-CONSTRAINTS FK_Product_Supplier
+CONSTRAINT UQ_Product_SKU UNIQUE (SKU),
+CONSTRAINT FK_Product_Supplier
     FOREIGN KEY (SupplierID) REFERENCES Supplier(SupplierID)
     ON UPDATE CASCADE
     ON DELETE SET NULL
@@ -34,7 +34,7 @@ CREATE TABLE Sale (
   CustomerID INTEGER NOT NULL,
   SaleDateTime TEXT NOT NULL,
   TotalAmount REAL NOT NULL, 
-FORIEGN KEY (CustomerID) REFRENCES Customer(CustomerID)
+FOREIGN KEY, (CustomerID) REFRENCES Customer(CustomerID)
   );
 
 CREATE TABLE Inventory_Adjustment (
