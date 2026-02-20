@@ -26,6 +26,7 @@ CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
     Name                TEXT NOT NULL,
+    Name            Text NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
@@ -34,6 +35,7 @@ CREATE TABLE Product (
     LowStockThreshold   INTEGER NOT NULL CHECK (LowStockThreshold >= 9),
     ReorderQty          INTEGER CHECK (ReorderQty IS NULL OR ReorderQty >= 0),
     IsActive            INTEGER NOT NULL DEFAULT 1 CHECK (IsActive IN (0,1)),
+
 CONSTRAINT UQ_Product_SKU UNIQUE (SKU),
 CONSTRAINT FK_Product_Supplier
     FOREIGN KEY (SupplierID) REFERENCES Supplier(SupplierID)
@@ -48,6 +50,11 @@ CREATE TABLE Sale (
   SaleDateTime      TEXT NOT NULL,
   TotalAmount       REAL NOT NULL, 
   FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+  SaleID INTEGER PRIMARY KEY,
+  CustomerID INTEGER NOT NULL,
+  SaleDateTime TEXT NOT NULL,
+  TotalAmount REAL NOT NULL, 
+FOREIGN KEY, (CustomerID) REFRENCES Customer(CustomerID)
   );
 
 -- Sale_Item
