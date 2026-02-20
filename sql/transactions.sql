@@ -4,7 +4,7 @@ SELECT
     p.Name,
     Sum(si.Quantity) AS TotalUnitsSold
 
-FROM Sales s
+FROM Sale s
 JOIN Sale_Item si ON si.SaleID = s.SaleID
 JOIN Product p ON p.ProductID = si.ProductID
 WHERE s.SaleDateTime >= datetime('now', '-30 days')
@@ -13,33 +13,31 @@ ORDER BY TotalUnitsSold DESC
 LIMIT 10;
 
 BEGIN TRANSACTION;
-
-INSERT INTO Sale (CustomerID, SaleDateTime, TotalAMount)
-VALUES (1, CURRENT_TIMESTASMP, 18.99);
-
-INSERT INTO Sale_Item (SaleId, ProductID, Quantity, UnitPriceAtSale)
-VALUES (last_insert_rowid(), 1, 2, 6.99);
+INSERT INTO Sale (CustomerID, SaleDateTime, TotalAmount)
+VALUES (1, datetime('now'), 18.99);
 
 INSERT INTO Sale_Item (SaleId, ProductID, Quantity, UnitPriceAtSale)
-VALUES (last_insert_rowid(), 2, 1, 4.99);
+VALUES (1, 1, 2, 6.99);
+
+INSERT INTO Sale_Item (SaleId, ProductID, Quantity, UnitPriceAtSale)
+VALUES (1, 2, 1, 4.99);
 
 UPDATE Product SET StockQty = StockQty - 2 WHERE ProductID = 1;
 UPDATE Product SET StockQty = StockQty - 1 WHERE ProductID = 2;
 
-INSERT INTO Inventory_Adjustment (ProductID, ChangeQty, Reason, Notes)
+INSERT INTO Inventory_Adjustment (ProductID, AdjustmentDateTime, ChangeQty, Reason, Notes)
 VALUES 
-    (1, -2, 'Sale', 'Decrease after sale'),
-    (2, -1, 'Sale', 'Decrease after sale');
-
+    (1, datetime('now'), -2, 'Sale', 'Decrease after sale = 1'),
+    (2, datetime('now'), -1, 'Sale', 'Decrease after sale = 1');
 COMMIT;
-    
-BEGIN TRANSACTION;
 
+
+BEGIN TRANSACTION;
 UPDATE Product
 Set StockQty = StockQty + (
-    SELECT Quanttity
+    SELECT SUM(Quantity)
     FROM Sale_Item
-    WHERE SaleId = 1 AND ProductID = Product.ProductID)
+    WHERE SaleId = 1 AND Sale_Item.ProductID = Product.ProductID)
 
 WHERE ProductID IN (
     SELECT ProductID
@@ -47,15 +45,14 @@ WHERE ProductID IN (
     WHERE SaleID = 1
 );
 Insert INTO Inventory_Adjustment (ProductID, ChangeQty, Reason, Notes)
-SELECT ProductID, Quantity, 'Sale Reversal', 'Voided SaleID = 1'
-FROM Sale_Item WHERE SaleID = 1;
+VALUES
+    (1, datetime('now', -2), 'Sale Reversal', 'Voided SaleID = 1');
 
 DELETE FROM Sale WHERE SaleID = 1;
-
 COMMIT;
 
-BEGIN TRANSACTION;
 
+BEGIN TRANSACTION;
 UPDATE Product
 SET StockQty = StockQty - 2,
     IsActive = 1
@@ -70,5 +67,4 @@ INSERT INTO Inventory_Adjustment (ProductID, AdjustmentDateTime, ChangeQty, Reas
 VALUES
     (1, datetime('now'), -2, 'Sale', 'Decrease after sale'),
     (2, datetime('now'), -1, 'Sale', 'Decrease after sale');
-
 COMMIT;
