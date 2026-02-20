@@ -1,4 +1,3 @@
-
 PRAGMA foreign_keys = ON;
 
 -- Customer
@@ -26,7 +25,7 @@ CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
     Name                TEXT NOT NULL,
-    Name            Text NOT NULL,
+    LastName            Text NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
