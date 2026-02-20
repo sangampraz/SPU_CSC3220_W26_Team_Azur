@@ -50,11 +50,6 @@ CREATE TABLE Sale (
   SaleDateTime      TEXT NOT NULL,
   TotalAmount       REAL NOT NULL, 
   FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
-  SaleID INTEGER PRIMARY KEY,
-  CustomerID INTEGER NOT NULL,
-  SaleDateTime TEXT NOT NULL,
-  TotalAmount REAL NOT NULL, 
-FOREIGN KEY, (CustomerID) REFRENCES Customer(CustomerID)
   );
 
 -- Sale_Item
