@@ -57,8 +57,8 @@ CREATE TABLE Sale_Item (
     SaleItemID          INTEGER PRIMARY KEY AUTOINCREMENT,
     SaleID              INTEGER NOT NULL,
     ProductID           INTEGER NOT NULL,
-    Quantity            INTEGER NOT NULL (Quantity > 0),
-    UnitPriceAtSale     REAL NOT NULL (UnitPriceAtSale >= 0),
+    Quantity            INTEGER NOT NULL CHECK (Quantity > 0),
+    UnitPriceAtSale     REAL NOT NULL CHECK (UnitPriceAtSale >= 0),
     FOREIGN KEY (SaleID) REFERENCES Sale(SaleID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
 );
