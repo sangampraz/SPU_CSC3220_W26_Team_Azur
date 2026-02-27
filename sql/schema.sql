@@ -26,6 +26,7 @@ CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
     Name                TEXT NOT NULL,
+    LastName            TEXT NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
