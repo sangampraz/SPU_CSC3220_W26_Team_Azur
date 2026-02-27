@@ -26,7 +26,6 @@ CREATE TABLE Product (
     ProductID           INTEGER PRIMARY KEY,
     SupplierID          INTEGER,
     Name                TEXT NOT NULL,
-    LastName            TEXT NOT NULL,
     Description         TEXT,
     SKU                 TEXT,
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
@@ -65,7 +64,7 @@ CREATE TABLE Sale_Item (
 
 -- Inventory_Adjustment
 CREATE TABLE Inventory_Adjustment (
-  AdjustmentID      INTEGER PRIMARY KEY,
+  AdjustmentID      INTEGER PRIMARY KEY AUTOINCREMENT,
   ProductID         INTEGER NOT NULL,
   AdjustmentDateTime TEXT NOT NULL,
   ChangeQty         INTEGER NOT NULL,
