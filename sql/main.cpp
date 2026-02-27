@@ -549,11 +549,11 @@ static void viewSales(Db& db) {
 
 /**
  * Resets the database file by deleting stockpilot.db and recreating it from SQL scripts
- * used the sqlite3 CLI to execute schema.sql and transactions.sql
+ * used the sqlite3 CLI to execute schema.sql and seed.sql
  */
 static void resetDbFromSqlFiles() {
     const string schema = "sql/schema.sql";
-    const string seed   = "sql/transactions.sql";
+    const string seed   = "sql.sql";
 
     const string sqliteExe = ".\\sqlite\\sqlite3";
 
@@ -579,16 +579,16 @@ static void resetDbFromSqlFiles() {
         return;
     }
 
-    // Build and run seed/transactions
+    // Build and run seed
     if (fs::exists(seed)) {
         string cmd2 = sqliteExe + " " + DB_FILE + " < " + seed;
         int rc2 = system(cmd2.c_str());
         if (rc2 != 0) {
-            cout << "Failed to run transactions.sql.\n";
+            cout << "Failed to run seed.sql.\n";
             return;
         }
     } else {
-        cout << "transactions.sql not found at: " << seed << "\n";
+        cout << "seed.sql not found at: " << seed << "\n";
         return;
     }
 
@@ -606,9 +606,9 @@ static void printMenu() {
     cout << "1) List products\n";
     cout << "2) Add product\n";
     cout << "3) Restock / adjust inventory\n";
-    cout << "4) Create sale (multi-item)\n";
+    cout << "4) Create sale\n";
     cout << "5) View sales + details\n";
-    cout << "6) Reset DB from schema.sql/transactions.sql (optional)\n";
+    cout << "6) Reset DB from schema.sql/seed.sql\n";
     cout << "0) Exit\n";
 }
 
