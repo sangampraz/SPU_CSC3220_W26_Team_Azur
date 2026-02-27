@@ -601,7 +601,7 @@ static void resetDbFromSqlFiles() {
  */
 static void printMenu() {
     cout << "\n=============================\n";
-    cout << " StockPilot MVP (SQLite + C++)\n";
+    cout << "          StockPilot\n";
     cout << "=============================\n";
     cout << "1) List products\n";
     cout << "2) Add product\n";
