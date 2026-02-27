@@ -1,15 +1,15 @@
 -- Seed data
 INSERT INTO Customer (CustomerID, FirstName, LastName)
-VALUES (1, 'Test', 'Customer');
+VALUES (1, 'David', 'Hernandes');
 
 INSERT INTO Supplier (SupplierName)
-VALUES ('Test Supplier');
+VALUES ('Costco');
 
-INSERT INTO Product (ProductID, SupplierID, Name, LastName, UnitPrice, StockQty, LowStockThreshold, IsActive)
-VALUES (1, 1, 'Item A', 'CategoryA', 6.99, 50, 10, 1);
+INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
+VALUES (1, 1, 'Flour', 6.99, 50, 10, 1);
 
-INSERT INTO Product (ProductID, SupplierID, Name, LastName, UnitPrice, StockQty, LowStockThreshold, IsActive)
-VALUES (2, 1, 'Item B', 'CategoryB', 4.99, 50, 10, 1);
+INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
+VALUES (2, 1, 'Cheese', 4.99, 50, 10, 1);
 
 
 -- INSERT transaction
@@ -17,11 +17,11 @@ BEGIN TRANSACTION;
 INSERT INTO Sale (CustomerID, SaleDateTime, TotalAmount)
 VALUES (1, datetime('now'), 18.99);
 
-INSERT INTO Sale_Item (SaleId, ProductID, Quantity, UnitPriceAtSale)
-VALUES (1, 1, 2, 6.99);
+INSERT INTO Sale_Item (SaleID, ProductID, Quantity, UnitPriceAtSale)
+VALUES (last_insert_rowid(), 1, 2, 6.99);
 
-INSERT INTO Sale_Item (SaleId, ProductID, Quantity, UnitPriceAtSale)
-VALUES (1, 2, 1, 4.99);
+INSERT INTO Sale_Item (SaleID, ProductID, Quantity, UnitPriceAtSale)
+VALUES (last_insert_rowid(), 2, 1, 4.99);
 
 UPDATE Product SET StockQty = StockQty - 2 WHERE ProductID = 1;
 UPDATE Product SET StockQty = StockQty - 1 WHERE ProductID = 2;
