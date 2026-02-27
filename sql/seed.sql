@@ -14,4 +14,4 @@ VALUES (2, 1, 'Cheese (5lb)', 14.99, 12, 3, 1);
 INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
 VALUES (3, 2, 'Pepperoni', 9.99, 20, 5, 1);
 INSERT INTO Product (ProductID, SupplierID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive)
-VALUES (2, 1, 'Tomato Sauce', 6.49, 12, 4, 1);
+VALUES (4, 2, 'Tomato Sauce', 6.49, 12, 4, 1);
