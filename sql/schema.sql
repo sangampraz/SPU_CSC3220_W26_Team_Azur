@@ -32,7 +32,7 @@ CREATE TABLE Product (
     UnitPrice           REAL NOT NULL CHECK (UnitPrice >= 0),
     CostPrice           REAL CHECK (CostPrice IS NULL OR CostPrice >= 0),
     StockQty            INTEGER NOT NULL CHECK (StockQty >= 0),
-    LowStockThreshold   INTEGER NOT NULL CHECK (LowStockThreshold >= 9),
+    LowStockThreshold   INTEGER NOT NULL DEFAULT 9 CHECK (LowStockThreshold >= 0),    
     ReorderQty          INTEGER CHECK (ReorderQty IS NULL OR ReorderQty >= 0),
     IsActive            INTEGER NOT NULL DEFAULT 1 CHECK (IsActive IN (0,1)),
 
@@ -65,12 +65,12 @@ CREATE TABLE Sale_Item (
 
 -- Inventory_Adjustment
 CREATE TABLE Inventory_Adjustment (
-  AdjustmentID INTEGER PRIMARY KEY,
-  ProductID INTEGER NOT NULL,
+  AdjustmentID      INTEGER PRIMARY KEY,
+  ProductID         INTEGER NOT NULL,
   AdjustmentDateTime TEXT NOT NULL,
-  ChangeQty INTEGER NOT NULL,
-  Reason TEXT,
-  Notes TEXT,
+  ChangeQty         INTEGER NOT NULL,
+  Reason            TEXT,
+  Notes             TEXT,
   FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
   );
 
