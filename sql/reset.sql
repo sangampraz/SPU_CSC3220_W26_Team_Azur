@@ -1,0 +1,10 @@
+PRAGMA foreign_keys = OFF;
+
+DROP TABLE IF EXISTS Inventory_Adjustment;
+DROP TABLE IF EXISTS Sale_Item;
+DROP TABLE IF EXISTS Sale;
+DROP TABLE IF EXISTS Product;
+DROP TABLE IF EXISTS Supplier;
+DROP TABLE IF EXISTS Customer;
+
+PRAGMA foreign_key = ON;
