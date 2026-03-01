@@ -1,7 +1,5 @@
     #include <sqlite3.h>
 
-    #include <cstdlib>
-    #include <filesystem>
     #include <iomanip>
     #include <iostream>
     #include <limits>
@@ -9,9 +7,10 @@
     #include <string>
     #include <vector>
     #include <ctime>
+    #include <fstream>
+    #include <iterator>
 
     using namespace std;
-    namespace fs = filesystem;
 
 
     // Database file created
@@ -551,51 +550,35 @@
 
 
     /**
+     *  Helper function to reading the file
+     */
+    static string readFileToString(const string& path) {
+        ifstream in(path);
+        if (!in) throw runtime_error("Could not open file: " + path);
+        return string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+    }
+
+
+    /**
      * Resets the database file by deleting stockpilot.db and recreating it from SQL scripts
      * used the sqlite3 CLI to execute schema.sql and seed.sql
      */
-    static void resetDbFromSqlFiles() {
+    static void resetDbFromSqlFiles(Db& db) {
+        const string reset = "sql/reset.sql";
         const string schema = "sql/schema.sql";
         const string seed   = "sql/seed.sql";
 
-        const string sqliteExe = ".\\sqlite\\sqlite3.exe";
-
-        if (!fs::exists(schema)) {
-            cout << "schema.sql not found at: " << schema << "\n";
-            return;
+        db.begin();
+        try {
+            db.exec(readFileToString(reset));
+            db.exec(readFileToString(schema));
+            db.exec(readFileToString(seed));
+            db.commit();
+            cout << "Database reset complete.\n";
+        } catch (...) {
+            db.rollback();
+            throw;
         }
-        if (!fs::exists(sqliteExe)) {
-            cout << "sqlite3.exe not found at: " << sqliteExe << "\n";
-            return;
-        }
-
-        // Delete db file
-        if (fs::exists(DB_FILE)) {
-            fs::remove(DB_FILE);
-        }
-
-        // Build and run schema
-        string cmd1 = sqliteExe + " " + DB_FILE + " < " + schema;
-        int rc1 = system(cmd1.c_str());
-        if (rc1 != 0) {
-            cout << "Failed to run schema.sql.\n";
-            return;
-        }
-
-        // Build and run seed
-        if (fs::exists(seed)) {
-            string cmd2 = sqliteExe + " " + DB_FILE + " < " + seed;
-            int rc2 = system(cmd2.c_str());
-            if (rc2 != 0) {
-                cout << "Failed to run seed.sql.\n";
-                return;
-            }
-        } else {
-            cout << "seed.sql not found at: " << seed << "\n";
-            return;
-        }
-
-        cout << "Database reset complete.\n";
     }
 
 
@@ -611,7 +594,7 @@
         cout << "3) Restock / adjust inventory\n";
         cout << "4) Create sale\n";
         cout << "5) View sales + details\n";
-        cout << "6) Reset DB from schema.sql/seed.sql\n";
+        cout << "6) Reset DB\n";
         cout << "0) Exit\n";
     }
 
@@ -651,7 +634,7 @@
                             pressEnter();
                             break;
                         case 6:
-                            resetDbFromSqlFiles();
+                            resetDbFromSqlFiles(db);
                             pressEnter();
                             break;
                         case 0:
