@@ -13,43 +13,51 @@
 using namespace std;
 namespace fs = filesystem;
 
-
+// Database file created
 static const string DB_FILE = "stockpilot.db";
 
 
 namespace SQL {
-    // Product
+    // Product queries 
     const char* LIST_PRODUCTS =
         "SELECT ProductID, Name, UnitPrice, StockQty, LowStockThreshold, IsActive "
         "FROM Product "
         "ORDER BY ProductID;";
 
+    // Insert a product
     const char* INSERT_PRODUCT =
         "INSERT INTO Product (Name, UnitPrice, StockQty, LowStockThreshold, IsActive) "
         "VALUES (?, ?, ?, ?, 1);";
 
+    // Fetches current stock for a single active product
     const char* GET_PRODUCT_STOCK =
         "SELECT StockQty FROM Product WHERE ProductID = ? AND IsActive = 1;";
 
+    // Adjust stock (positive or negative) for a single active product
     const char* UPDATE_PRODUCT_STOCK =
         "UPDATE Product SET StockQty = StockQty + ? WHERE ProductID = ? AND IsActive = 1;";
 
-    // Inventory Adjustment
+    // Inventory Adjustment Log
+    // Logs an inventory adjustment with current timestamp
     const char* INSERT_ADJUSTMENT =
         "INSERT INTO Inventory_Adjustment (ProductID, ChangeQty, Reason, Notes) "
         "VALUES (?, ?, ?, ?);";
 
-    // Sale
+    // Sale queries
+    // Create a sale header
     const char* INSERT_SALE =
         "INSERT INTO Sale (SaleDate, Total) VALUES (datetime('now'), ?);";
 
+    // Inserts a sale line item
     const char* INSERT_SALE_ITEM =
         "INSERT INTO Sale_Item (SaleID, ProductID, Quantity, UnitPrice) "
         "VALUES (?, ?, ?, ?);";
 
+    // Shows recent sales
     const char* LIST_SALES =
         "SELECT SaleID, SaleDate, Total FROM Sale ORDER BY SaleID DESC LIMIT 20;";
 
+    // Shows recent sales
     const char* SALE_DETAILS =
         "SELECT si.ProductID, p.Name, si.Quantity, si.UnitPrice, (si.Quantity * si.UnitPrice) AS LineTotal "
         "FROM Sale_Item si "
@@ -57,28 +65,39 @@ namespace SQL {
         "WHERE si.SaleID = ?;";
 }
 
-// =======================
-// SMALL UTILS
-// =======================
+
+/**
+ * Clears the input stream state and discards the remainder of hte current line
+ * Prevents invalid input from breaking subsequent reads
+ */
 static void clearInput() {
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
+
+/**
+ * Reads a numeric value from the user with validation
+ * Continues prompting until a valid value is entered
+ */
 template <typename T>
 static T readNumber(const string& prompt) {
     while (true) {
         cout << prompt;
         T value{};
         if (cin >> value) {
-            clearInput();
+            clearInput();                               // remove any extra characters on the line
             return value;
         }
-        clearInput();
+        clearInput();                                   // recover from invalid input
         cout << "Invalid input. Try again.\n";
     }
 }
 
+
+/**
+ * Reads a full line of text from the user
+ */
 static string readLine(const string& prompt) {
     cout << prompt;
     string s;
@@ -86,17 +105,31 @@ static string readLine(const string& prompt) {
     return s;
 }
 
+
+/**
+ * Pause helper to keep console output readable
+ */
 static void pressEnter() {
     cout << "\nPress Enter to continue...";
     string _;
     getline(cin, _);
 }
 
-// =======================
+
+
 // DB WRAPPER
-// =======================
+
+/**
+ * Wrapper around sqlite3*
+ * - opens database on construction
+ * - close database on destruction
+ */
 class Db {
 public:
+    /**
+    * Opens SQLite database file, throws error on failure
+    * Enables foreign key enforcement for this connection 
+    */
     explicit Db(const string& path) : db_(nullptr) {
         if (sqlite3_open(path.c_str(), &db_) != SQLITE_OK) {
             string err = sqlite3_errmsg(db_);
@@ -107,10 +140,19 @@ public:
         exec("PRAGMA foreign_keys = ON;");
     }
 
+
+    /**
+     * Ensures database handle is closed
+     */
     ~Db() {
         if (db_) sqlite3_close(db_);
     }
 
+
+    /**
+     * Execures a SQL statement without parameters
+     * throws runtime error if SQLite reports an error
+     */
     Db(const Db&) = delete;
     Db& operator=(const Db&) = delete;
 
@@ -124,6 +166,10 @@ public:
         }
     }
 
+
+    /**
+     * Prepares a parameterized SQL statement
+     */
     sqlite3_stmt* prepare(const char* sql) {
         sqlite3_stmt* stmt = nullptr;
         int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
@@ -133,8 +179,15 @@ public:
         return stmt;
     }
 
+    /** Begins a transaction */
     void begin() { exec("BEGIN TRANSACTION;"); }
+
+    /** Commits the current transaction */
     void commit() { exec("COMMIT;"); }
+
+    /**
+     * Atempts to roll back the current transaction
+     */
     void rollback() noexcept {
         try { exec("ROLLBACK;"); } catch (...) {}
     }
@@ -145,9 +198,8 @@ private:
     sqlite3* db_;
 };
 
-// =======================
-// PRINTING HELPERS
-// =======================
+
+
 static void printRow(sqlite3_stmt* stmt) {
     int cols = sqlite3_column_count(stmt);
     for (int i = 0; i < cols; i++) {
@@ -159,9 +211,11 @@ static void printRow(sqlite3_stmt* stmt) {
     cout << "\n";
 }
 
-// =======================
-// FEATURES (MVP)
-// =======================
+
+
+/**
+ * Lists product in a formatted table and highlights low-stock and inactive status
+ */
 static void listProducts(Db& db) {
     sqlite3_stmt* stmt = db.prepare(SQL::LIST_PRODUCTS);
     cout << "\n=== PRODUCTS ===\n";
@@ -200,6 +254,10 @@ static void listProducts(Db& db) {
     sqlite3_finalize(stmt);
 }
 
+
+/**
+ * Adds a new product to the database using a prepared INSERT statement
+ */
 static void addProduct(Db& db) {
     string name = readLine("Product name: ");
     double price = readNumber<double>("Unit price: ");
@@ -219,9 +277,13 @@ static void addProduct(Db& db) {
     }
     sqlite3_finalize(stmt);
 
-    cout << "✅ Product added.\n";
+    cout << "Product added.\n";
 }
 
+
+/**
+ * Retrives current stock quantity for an active product
+ */
 static int getStock(Db& db, int productId) {
     sqlite3_stmt* stmt = db.prepare(SQL::GET_PRODUCT_STOCK);
     sqlite3_bind_int(stmt, 1, productId);
@@ -229,13 +291,17 @@ static int getStock(Db& db, int productId) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_ROW) {
         sqlite3_finalize(stmt);
-        return numeric_limits<int>::min(); // not found
+        return numeric_limits<int>::min();                      // not found
     }
     int stock = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
     return stock;
 }
 
+
+/**
+ * Adjusts product stock and logs the adjustment
+ */
 static void adjustStock(Db& db, int productId, int deltaQty, const string& reason, const string& notes) {
     // Update stock
     sqlite3_stmt* up = db.prepare(SQL::UPDATE_PRODUCT_STOCK);
@@ -269,6 +335,11 @@ static void adjustStock(Db& db, int productId, int deltaQty, const string& reaso
     sqlite3_finalize(adj);
 }
 
+
+/**
+ * Interactive inventory adjustment feature
+ * Demonstrates a transaction that updates product and wirtes Inventory_Adjustment
+ */
 static void restockProduct(Db& db) {
     int productId = readNumber<int>("ProductID to adjust: ");
     int delta = readNumber<int>("Change quantity (positive restock, negative shrink): ");
@@ -287,7 +358,7 @@ static void restockProduct(Db& db) {
 
         adjustStock(db, productId, delta, reason, notes);
         db.commit();
-        cout << "✅ Inventory updated & logged.\n";
+        cout << "Inventory updated & logged.\n";
     } catch (...) {
         db.rollback();
         throw;
@@ -300,6 +371,10 @@ struct SaleItemInput {
     double unitPrice{};
 };
 
+
+/**
+ * Creates a sale with multiple items
+ */
 static void createSale(Db& db) {
     cout << "\nCreate Sale: enter items. ProductID=0 to finish.\n";
 
@@ -381,7 +456,7 @@ static void createSale(Db& db) {
         }
 
         db.commit();
-        cout << "✅ Sale created. SaleID=" << saleId
+        cout << "Sale created. SaleID=" << saleId
                   << " Total=$" << fixed << setprecision(2) << total << "\n";
     } catch (...) {
         db.rollback();
@@ -389,9 +464,13 @@ static void createSale(Db& db) {
     }
 }
 
+
+/**
+ * Shows recent sales and lets the user view details for a selected sale
+ */
 static void viewSales(Db& db) {
     sqlite3_stmt* stmt = db.prepare(SQL::LIST_SALES);
-    cout << "\n=== RECENT SALES (last 20) ===\n";
+    cout << "\n=== RECENT SALES ===\n";
     cout << left
               << setw(10) << "SaleID"
               << setw(22) << "SaleDate"
@@ -459,10 +538,12 @@ static void viewSales(Db& db) {
     }
 }
 
+
+/**
+ * Resets the database file by deleting stockpilot.db and recreating it from SQL scripts
+ * used the sqlite3 CLI to execute schema.sql and seed.sql
+ */
 static void resetDbFromSqlFiles() {
-    // Optional: if you keep schema.sql and seed.sql next to the program.
-    // This function uses system() to call sqlite3. Works great for demo resets.
-    // If you don't want this feature, you can remove it.
     const string schema = "schema.sql";
     const string seed = "seed.sql";
 
@@ -476,6 +557,7 @@ static void resetDbFromSqlFiles() {
         fs::remove(DB_FILE);
     }
 
+    // Build and run schema
     string cmd1 = "sqlite3 " + DB_FILE + " < " + schema;
     int rc1 = system(cmd1.c_str());
     if (rc1 != 0) {
@@ -483,6 +565,7 @@ static void resetDbFromSqlFiles() {
         return;
     }
 
+    // Build and run seed
     if (fs::exists(seed)) {
         string cmd2 = "sqlite3 " + DB_FILE + " < " + seed;
         int rc2 = system(cmd2.c_str());
@@ -492,15 +575,16 @@ static void resetDbFromSqlFiles() {
         }
     }
 
-    cout << "✅ Database reset complete.\n";
+    cout << "Database reset complete.\n";
 }
 
-// =======================
-// MAIN MENU
-// =======================
+
+/**
+ * Prints the main console menu
+ */
 static void printMenu() {
     cout << "\n=============================\n";
-    cout << " StockPilot MVP (SQLite + C++)\n";
+    cout << "        StockPilot MVP \n";
     cout << "=============================\n";
     cout << "1) List products\n";
     cout << "2) Add product\n";
@@ -511,6 +595,12 @@ static void printMenu() {
     cout << "0) Exit\n";
 }
 
+
+
+/**
+ * Application entry point
+ * Opens the database once and then loops the user menu until exit
+ */
 int main() {
     try {
         Db db(DB_FILE);
@@ -553,7 +643,7 @@ int main() {
                         break;
                 }
             } catch (const exception& e) {
-                cout << "❌ Error: " << e.what() << "\n";
+                cout << "Error: " << e.what() << "\n";
                 pressEnter();
             }
         }
